@@ -32,11 +32,11 @@ var mouseX;
 var mouseY;
 var press = false;
 var initialize = (function() {
-    clickControl({
-            layerX: .1,
-            layerY: .1,
-            buttons: 1
-        });
+clickControl({
+    layerX: .1,
+    layerY: .1,
+    buttons: 0
+});//switch buttons to 1 to pour on init
     var w = $("body").width();
     var h = $("body").height();
     var col = 0;
