@@ -1,5 +1,5 @@
 import * as dat from "dat.gui";
-import chroma from "chroma-js"
+import chroma from "chroma-js";
 type MouseData = {
   x: number;
   y: number;
@@ -39,17 +39,22 @@ class SPHConfig {
   RANGE: number;
   PRESSURE: number;
   VISCOSITY: number;
+  DARK: boolean;
+  ARC: boolean = true;
   constructor() {
     this.GRAVITY_Y = 0.125;
     this.GRAVITY_X = 0;
     this.RANGE = 32;
     this.PRESSURE = 1;
     this.VISCOSITY = 0.05;
+    this.DARK = true;
   }
 }
 const SPH = new SPHConfig();
 
 const gui = new dat.GUI();
+gui.add(SPH, "DARK").name("dark mode");
+gui.add(SPH, "ARC").name("circles");
 gui.add(SPH, "VISCOSITY").name("viscosity").max(0.5).min(0).step(0.025);
 let gx = gui.add(SPH, "GRAVITY_X").name("gravity x").max(1).min(-1).step(0.125);
 let gy = gui.add(SPH, "GRAVITY_Y").name("gravity y").max(1).min(-1).step(0.125);
@@ -95,28 +100,44 @@ function draw() {
 
   ctx.scale(1 / simScale, 1 / simScale);
   ctx.fillStyle = "#EBE8E7";
+
+  ctx.fillStyle = "#312D32";
+  let BK = SPH.DARK ? "#312D32" : "#EBE8E7";
+  ctx.fillStyle = BK;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = "blue";
   ctx.strokeStyle = "blue";
   ctx.fillStyle = "#3ED9D8";
 
-  let hsl0 = chroma( "#3ED9D8").hsl();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = chroma.blend(
+    chroma("#55EEEE"),
+    BK,
+    SPH.DARK ? "screen" : "multiply"
+  ); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
+
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
     // ctx.fillStyle = "#3ED9D8";
     // ctx.beginPath();
     //   ctx.fillRect(p.x - 16, p.y - 16, 16 * 2, 16 * 2);
-    ctx.fillStyle = chroma.hsl(hsl0[0]+p.color*360,hsl0[1],hsl0[2]);
+
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.rx, -p.ry));
-    let ry = Math.max(SPH.RANGE/2-(p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2),0); //Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let ry = Math.max(
+      SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2),
+      0
+    ); //Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     let rx = ry; //SPH.RANGE / 8; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-    ctx.beginPath();
-    ctx.arc(0, 0, rx+2, 0, 2 * Math.PI, false);
-    ctx.fill();
-    // ctx.fillRect(0 - (rx + 2), 0 - (ry + 2), (rx + 2) * 2, (ry + 2) * 2);
+    if (SPH.ARC) {
+      ctx.beginPath();
+      ctx.arc(0, 0, rx + 2, 0, 2 * Math.PI, false);
+      ctx.fill();
+    } else {
+      ctx.fillRect(0 - (rx + 2), 0 - (ry + 2), (rx + 2) * 2, (ry + 2) * 2);
+    }
     ctx.restore();
     // ctx.arc(p.x, p.y, 16, 0, 2 * Math.PI, false);
     // ctx.fill();
@@ -139,30 +160,41 @@ function draw() {
   //   // ctx.fill();
   // }
 
-  ctx.fillStyle = "#EBE8E7";
-  let hsl = chroma("#bae8e7").hsl();
-  
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = chroma.blend(
+    chroma("#55EEEE").brighten(SPH.DARK ? -1 : 1),
+    BK,
+    SPH.DARK ? "screen" : "multiply"
+  ); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
+
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
     //   ctx.beginPath();
-    ctx.fillStyle = chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.rx, -p.ry));
-    let ry = Math.max(0, (SPH.RANGE/2-(p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2))); //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let ry = Math.max(
+      0,
+      SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2)
+    ); //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-    ctx.beginPath();
-    ctx.arc(0, 0, rx, 0, 2 * Math.PI, false);
-    ctx.fill();
-    // ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
+
+    if (SPH.ARC) {
+      ctx.beginPath();
+      ctx.arc(0, 0, rx, 0, 2 * Math.PI, false);
+      ctx.fill();
+    } else {
+      ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
+    }
     ctx.restore();
     // ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
 
     // ctx.fill();
   }
+
   // let br = 7;
-  ctx.globalCompositeOperation = "darken";
+  // ctx.globalCompositeOperation = "darken";
   // ctx.filter = `blur(${br}px)`;
   var gradient = ctx.createRadialGradient(
     0,
@@ -356,15 +388,15 @@ class Particle {
     this.vy += this.fy;
     this.x += this.vx;
     this.y += this.vy;
-    this.color = 0;//(Math.sin(Math.hypot(this.rx,this.ry)*5)*0.5+1.5)%1;
+    this.color = 0; //(Math.sin(Math.hypot(this.rx,this.ry)*5)*0.5+1.5)%1;
   }
   calcForce() {
     let B = SPH.RANGE;
 
-    if (this.x < B) this.fx += (B - this.x) * 0.125-this.vx*0.5;
-    if (this.y < B) this.fy += (B - this.y) * 0.125-this.vy*0.5;
-    if (this.x > w - B) this.fx += (w - B - this.x) * 0.125-this.vx*0.5;
-    if (this.y > h - B) this.fy += (h - B - this.y) * 0.125-this.vy*0.5;
+    if (this.x < B) this.fx += (B - this.x) * 0.125 - this.vx * 0.5;
+    if (this.y < B) this.fy += (B - this.y) * 0.125 - this.vy * 0.5;
+    if (this.x > w - B) this.fx += (w - B - this.x) * 0.125 - this.vx * 0.5;
+    if (this.y > h - B) this.fy += (h - B - this.y) * 0.125 - this.vy * 0.5;
   }
 }
 class Neighbor {
