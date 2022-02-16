@@ -42,7 +42,7 @@ class SPHConfig {
   constructor() {
     this.GRAVITY_Y = 0.125;
     this.GRAVITY_X = 0;
-    this.RANGE = 25;
+    this.RANGE = 32;
     this.PRESSURE = 1;
     this.VISCOSITY = 0.05;
   }
