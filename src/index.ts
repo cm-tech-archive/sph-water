@@ -69,31 +69,29 @@ var delta = 0;
 var lastTick = new Date();
 
 function tick() {
-   let tick = new Date();
-  delta+=Math.min((+tick-+lastTick)/60,2);
-    lastTick = tick;
-    
+  let tick = new Date();
+  delta += Math.min((+tick - +lastTick) / 60, 2);
+  lastTick = tick;
 }
 
 function frame() {
-    
   var tempDelta = delta + 0;
-    delta = 0;
-    // for (let i = 0; i < tempDelta;i++){
-        if(mouse.down) pour();
-    // }
-    let GX = SPH.GRAVITY_X;
-    let GY = SPH.GRAVITY_Y;
-    let a = Math.sin(new Date().getTime()/2000)*0.1;
-    // gx.setValue(Math.sin(a)/8);//GX * Math.cos(a) - GY * Math.sin(a)).updateDisplay();
-    // gy.setValue(Math.cos(a)/8);
+  delta = 0;
+  // for (let i = 0; i < tempDelta;i++){
+  if (mouse.down) pour();
+  // }
+  let GX = SPH.GRAVITY_X;
+  let GY = SPH.GRAVITY_Y;
+  let a = Math.sin(new Date().getTime() / 2000) * 0.1;
+  // gx.setValue(Math.sin(a)/8);//GX * Math.cos(a) - GY * Math.sin(a)).updateDisplay();
+  // gy.setValue(Math.cos(a)/8);
   move(tempDelta);
   ctx.font = "30px Arial";
 }
 
 function draw() {
-    ctx.resetTransform();
-    
+  ctx.resetTransform();
+
   ctx.scale(1 / simScale, 1 / simScale);
   ctx.fillStyle = "#EBE8E7";
   ctx.fillRect(0, 0, w, h);
@@ -105,27 +103,48 @@ function draw() {
     // ctx.fillStyle = "#3ED9D8";
     // ctx.beginPath();
     //   ctx.fillRect(p.x - 16, p.y - 16, 16 * 2, 16 * 2);
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(Math.atan2(p.vx,-p.vy));
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(Math.atan2(p.rx, -p.ry));
+    let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let rx = ry;//SPH.RANGE / 8; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-      ctx.fillRect(0 - 16, 0 - 16, 16 * 2, 16 * 2);
-      ctx.restore();
+    ctx.fillRect(0 - (rx + 2), 0 - (ry + 2), (rx + 2) * 2, (ry + 2) * 2);
+    ctx.restore();
     // ctx.arc(p.x, p.y, 16, 0, 2 * Math.PI, false);
     // ctx.fill();
   }
+  // ctx.fillStyle = "#bae8e7";
+  // for (var i = 0; i < numParticles; i++) {
+  //   var p = particles[i];
+  //   // ctx.fillStyle = "#3ED9D8";
+  //   // ctx.beginPath();
+  //   //   ctx.fillRect(p.x - 16, p.y - 16, 16 * 2, 16 * 2);
+  //   ctx.save();
+  //   ctx.translate(p.x, p.y);
+  //   ctx.rotate(Math.atan2(p.rx, -p.ry));
+  //   let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+  //   let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+  //   //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
+  //   ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
+  //   ctx.restore();
+  //   // ctx.arc(p.x, p.y, 16, 0, 2 * Math.PI, false);
+  //   // ctx.fill();
+  // }
 
   ctx.fillStyle = "#EBE8E7";
   ctx.fillStyle = "#bae8e7";
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
     //   ctx.beginPath();
-      
+
     ctx.save();
     ctx.translate(p.x, p.y);
-    ctx.rotate(Math.atan2(p.vx,-p.vy));
-  //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-    ctx.fillRect(0 - 14, 0 - 14, 14 * 2, 14 * 2);
+    ctx.rotate(Math.atan2(p.rx,-p.ry));
+    let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
+    ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
     ctx.restore();
     // ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
 
@@ -134,44 +153,52 @@ function draw() {
   // let br = 7;
   ctx.globalCompositeOperation = "darken";
   // ctx.filter = `blur(${br}px)`;
-  for (var i = 0; i < numParticles; i++) {
-    var p = particles[i];
-    // ctx.beginPath();
-    // 
-    // var color = HSVtoRGB(0.5, 0.71, Math.max(0.85,1 - 0.05*Math.sqrt(p.density * 2)));
-    let l = Math.min(1, Math.max(0, 1.5 - Math.sqrt(p.density * 2)));
-    var gradient = ctx.createRadialGradient(0,0, 0, 0,0, 14*Math.sqrt(2));
+  var gradient = ctx.createRadialGradient(0,0, 0, 0,0, SPH.RANGE/Math.sqrt(2));
 
     // Add three color stops
     gradient.addColorStop(
       0,
-      `hsla(180, ${67 + l * (50 - 67)}%, ${55 + l * (82 - 55)}%,100%)`
+      `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,100%)`
     );
     gradient.addColorStop(
       1,
-      `hsla(180, ${67 + l * (50 - 67)}%, ${55 + l * (82 - 55)}%,0%)`
+      `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,0%)`
     );
       ctx.fillStyle = gradient;
+  for (var i = 0; i < numParticles; i++) {
+    var p = particles[i];
+    // ctx.beginPath();
+    //
+    // var color = HSVtoRGB(0.5, 0.71, Math.max(0.85,1 - 0.05*Math.sqrt(p.density * 2)));
+    let l = Math.min(1, Math.max(0, 1.5 - Math.sqrt(p.density * 2)));
+    
     //   ctx.fillStyle = `hsl(180, ${67 + l * (50 - 67)}%, ${55 + l * (82 - 55)}%)`;
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate(Math.atan2(p.vx,-p.vy));
-    //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-      ctx.fillRect(0 - 14, 0 - 14, 14 * 2, 14 * 2);
+    ctx.rotate(Math.atan2(p.rx, -p.ry));
+    ctx.globalAlpha = 1-l;
+      let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+      let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+      //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
+      ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
       ctx.restore();
     // ctx.fill();
   }
+  ctx.globalAlpha = 1;
 
   ctx.filter = "none";
-    ctx.globalCompositeOperation = "source-over";
-    
-requestAnimationFrame(draw);
+  ctx.globalCompositeOperation = "source-over";
+
+  requestAnimationFrame(draw);
 }
 
 function pour() {
   if (count % 1 == 0) {
-    var p = new Particle(mouse.x+(Math.random()-0.5)*SPH.RANGE, mouse.y+(Math.random()-0.5)*SPH.RANGE);
-    
+    var p = new Particle(
+      mouse.x + (Math.random() - 0.5) * SPH.RANGE,
+      mouse.y + (Math.random() - 0.5) * SPH.RANGE
+    );
+
     particles[numParticles++] = p;
   }
 }
@@ -180,9 +207,9 @@ function calc() {
   updateGrids();
   findNeighbors();
   calcPressure();
-    calcForce();
-    
-window.setTimeout(calc, 1000/60);
+  calcForce();
+
+  window.setTimeout(calc, 1000 / 60);
 }
 
 function move(steps: number) {
@@ -196,9 +223,8 @@ function move(steps: number) {
 }
 
 function updateGrids() {
-
-INV_GRID_SIZEX = 1 / (w / NUM_GRIDSX);
-INV_GRID_SIZEY = 1 / (h / NUM_GRIDSY);
+  INV_GRID_SIZEX = 1 / (w / NUM_GRIDSX);
+  INV_GRID_SIZEY = 1 / (h / NUM_GRIDSY);
   var i;
   var j;
   for (i = 0; i < NUM_GRIDSX; i++)
@@ -261,9 +287,9 @@ function calcForce() {
     var n = neighbors[i];
     n.calcForce();
   }
-    for (var i = 0; i < numParticles; i++){
-        particles[i].calcForce();
-    }
+  for (var i = 0; i < numParticles; i++) {
+    particles[i].calcForce();
+  }
 }
 
 class Particle {
@@ -276,6 +302,8 @@ class Particle {
   fy: number;
   gx: number;
   gy: number;
+  rx: number;
+  ry: number;
   pressure: number;
   vx: number;
   constructor(x: number, y: number) {
@@ -287,27 +315,30 @@ class Particle {
     this.vy = 0;
     this.fx = 0;
     this.fy = 0;
+    this.rx = 0;
+    this.ry = 0;
     this.density = 0;
     this.pressure = 0;
     this.color = 0.6;
   }
   move() {
-    this.vy += SPH.GRAVITY_Y+(Math.random()-0.5)*0.0001;
-    this.vx += SPH.GRAVITY_X+(Math.random()-0.5)*0.0001;
+    this.rx = this.rx * 0.9 + 0.1 * this.fx * Math.sign(this.fy);
+    this.ry = this.ry * 0.9 + 0.1 * this.fy * Math.sign(this.fy);
+    this.vy += SPH.GRAVITY_Y + (Math.random() - 0.5) * 0.0001;
+    this.vx += SPH.GRAVITY_X + (Math.random() - 0.5) * 0.0001;
     this.vx += this.fx;
     this.vy += this.fy;
     this.x += this.vx;
-      this.y += this.vy;
-   
+    this.y += this.vy;
   }
-    calcForce() {
-        let B = SPH.RANGE;
-        
-        if (this.x < B) this.fx += (B - this.x) * 0.5;// - this.vx * 0.1;
-        if (this.y < B) this.fy += (B - this.y) * 0.5;// - this.vy * 0.1;
-        if (this.x > w - B) this.fx += (w - B - this.x) * 0.5;// - this.vx * 0.1;
-        if (this.y > h - B) this.fy += (h - B - this.y) * 0.5;//- this.vy * 0.1;
-    }
+  calcForce() {
+    let B = SPH.RANGE;
+
+    if (this.x < B) this.vx += (B - this.x) * 0.125;
+    if (this.y < B) this.vy += (B - this.y) * 0.125;
+    if (this.x > w - B) this.vx += (w - B - this.x) * 0.125;
+    if (this.y > h - B) this.fy += (h - B - this.y) * 0.125;
+  }
 }
 class Neighbor {
   p1?: Particle;
@@ -326,14 +357,14 @@ class Neighbor {
   setParticle(p1: Particle, p2: Particle) {
     this.p1 = p1;
     this.p2 = p2;
-    this.nx = p1.x - p2.x+(Math.random()-0.5)*0.005;
-    this.ny = p1.y - p2.y+(Math.random()-0.5)*0.005;
+    this.nx = p1.x - p2.x + (Math.random() - 0.5) * 0.005;
+    this.ny = p1.y - p2.y + (Math.random() - 0.5) * 0.005;
     this.distance = Math.sqrt(this.nx * this.nx + this.ny * this.ny);
-    this.weight = 1 - Math.max(this.distance,1) / SPH.RANGE;
+    this.weight = 1 - Math.max(this.distance, 1) / SPH.RANGE;
     var temp = this.weight * this.weight * this.weight;
     p1.density += temp;
     p2.density += temp;
-    temp = 1 / Math.max(this.distance,1);
+    temp = 1 / Math.max(this.distance, 1);
     this.nx *= temp;
     this.ny *= temp;
   }
@@ -388,7 +419,7 @@ canvas.addEventListener(
   },
   false
 );
-window.setInterval(frame, 1000/60);
-window.setInterval(tick, 1000/60);
-window.setTimeout(calc, 1000/60);
+window.setInterval(frame, 1000 / 60);
+window.setInterval(tick, 1000 / 60);
+window.setTimeout(calc, 1000 / 60);
 requestAnimationFrame(draw);
