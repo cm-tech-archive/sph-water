@@ -15,6 +15,7 @@
     "vite": "^2.2.3"
   },
   "dependencies": {
+    "chroma-js": "^2.4.2",
     "dat.gui": "^0.7.7"
   }
 }

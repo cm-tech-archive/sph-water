@@ -1,4 +1,5 @@
 import * as dat from "dat.gui";
+import chroma from "chroma-js"
 type MouseData = {
   x: number;
   y: number;
@@ -98,18 +99,24 @@ function draw() {
   ctx.fillStyle = "blue";
   ctx.strokeStyle = "blue";
   ctx.fillStyle = "#3ED9D8";
+
+  let hsl0 = chroma( "#3ED9D8").hsl();
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
     // ctx.fillStyle = "#3ED9D8";
     // ctx.beginPath();
     //   ctx.fillRect(p.x - 16, p.y - 16, 16 * 2, 16 * 2);
+    ctx.fillStyle = chroma.hsl(hsl0[0]+p.color*360,hsl0[1],hsl0[2]);
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.rx, -p.ry));
-    let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
-    let rx = ry;//SPH.RANGE / 8; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let ry = Math.max(SPH.RANGE/2-(p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2),0); //Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let rx = ry; //SPH.RANGE / 8; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-    ctx.fillRect(0 - (rx + 2), 0 - (ry + 2), (rx + 2) * 2, (ry + 2) * 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, rx+2, 0, 2 * Math.PI, false);
+    ctx.fill();
+    // ctx.fillRect(0 - (rx + 2), 0 - (ry + 2), (rx + 2) * 2, (ry + 2) * 2);
     ctx.restore();
     // ctx.arc(p.x, p.y, 16, 0, 2 * Math.PI, false);
     // ctx.fill();
@@ -133,18 +140,22 @@ function draw() {
   // }
 
   ctx.fillStyle = "#EBE8E7";
-  ctx.fillStyle = "#bae8e7";
+  let hsl = chroma("#bae8e7").hsl();
+  
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
     //   ctx.beginPath();
-
+    ctx.fillStyle = chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
     ctx.save();
     ctx.translate(p.x, p.y);
-    ctx.rotate(Math.atan2(p.rx,-p.ry));
-    let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    ctx.rotate(Math.atan2(p.rx, -p.ry));
+    let ry = Math.max(0, (SPH.RANGE/2-(p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2))); //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-    ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, rx, 0, 2 * Math.PI, false);
+    ctx.fill();
+    // ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
     ctx.restore();
     // ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
 
@@ -153,37 +164,46 @@ function draw() {
   // let br = 7;
   ctx.globalCompositeOperation = "darken";
   // ctx.filter = `blur(${br}px)`;
-  var gradient = ctx.createRadialGradient(0,0, 0, 0,0, SPH.RANGE/Math.sqrt(2));
+  var gradient = ctx.createRadialGradient(
+    0,
+    0,
+    0,
+    0,
+    0,
+    SPH.RANGE / Math.sqrt(2)
+  );
 
-    // Add three color stops
-    gradient.addColorStop(
-      0,
-      `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,100%)`
-    );
-    gradient.addColorStop(
-      1,
-      `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,0%)`
-    );
-      ctx.fillStyle = gradient;
-  for (var i = 0; i < numParticles; i++) {
-    var p = particles[i];
-    // ctx.beginPath();
-    //
-    // var color = HSVtoRGB(0.5, 0.71, Math.max(0.85,1 - 0.05*Math.sqrt(p.density * 2)));
-    let l = Math.min(1, Math.max(0, 1.5 - Math.sqrt(p.density * 2)));
-    
-    //   ctx.fillStyle = `hsl(180, ${67 + l * (50 - 67)}%, ${55 + l * (82 - 55)}%)`;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-    ctx.rotate(Math.atan2(p.rx, -p.ry));
-    ctx.globalAlpha = 1-l;
-      let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
-      let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
-      //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
-      ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
-      ctx.restore();
-    // ctx.fill();
-  }
+  // Add three color stops
+  gradient.addColorStop(
+    0,
+    `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,100%)`
+  );
+  gradient.addColorStop(
+    1,
+    `hsla(180, ${67 + 0 * (50 - 67)}%, ${55 + 0 * (82 - 55)}%,0%)`
+  );
+  ctx.fillStyle = gradient;
+  // for (var i = 0; i < numParticles; i++) {
+  //   var p = particles[i];
+  //   //
+  //   //
+  //   // var color = HSVtoRGB(0.5, 0.71, Math.max(0.85,1 - 0.05*Math.sqrt(p.density * 2)));
+  //   let l = Math.min(1, Math.max(0, 1.5 - Math.sqrt(p.density * 2)));
+
+  //   //   ctx.fillStyle = `hsl(180, ${67 + l * (50 - 67)}%, ${55 + l * (82 - 55)}%)`;
+  //     ctx.save();
+  //     ctx.translate(p.x, p.y);
+  //   ctx.rotate(Math.atan2(p.rx, -p.ry));
+  //   ctx.globalAlpha = 1-l;
+  //     let ry = SPH.RANGE / 2;//Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+  //     let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+  //   ctx.beginPath();
+  //   ctx.arc(0, 0, rx, 0, 2 * Math.PI, false);
+  //   ctx.fill();
+  //     // ctx.fillRect(0 - rx, 0 - ry, rx * 2, ry * 2);
+  //     ctx.restore();
+  //   //
+  // }
   ctx.globalAlpha = 1;
 
   ctx.filter = "none";
@@ -231,6 +251,8 @@ function updateGrids() {
     for (j = 0; j < NUM_GRIDSY; j++) grids[i][j].clear();
   for (i = 0; i < numParticles; i++) {
     var p = particles[i];
+    p.min_d = 0;
+    p.min_dc = 0;
     p.fx = p.fy = p.density = 0;
     p.gx = Math.floor(p.x * INV_GRID_SIZEX);
     p.gy = Math.floor(p.y * INV_GRID_SIZEY);
@@ -306,7 +328,11 @@ class Particle {
   ry: number;
   pressure: number;
   vx: number;
+  min_d: number;
+  min_dc: number;
   constructor(x: number, y: number) {
+    this.min_d = SPH.RANGE;
+    this.min_dc = 1;
     this.x = x;
     this.y = y;
     this.gx = 0;
@@ -319,7 +345,7 @@ class Particle {
     this.ry = 0;
     this.density = 0;
     this.pressure = 0;
-    this.color = 0.6;
+    this.color = Math.random();
   }
   move() {
     this.rx = this.rx * 0.9 + 0.1 * this.fx * Math.sign(this.fy);
@@ -330,14 +356,15 @@ class Particle {
     this.vy += this.fy;
     this.x += this.vx;
     this.y += this.vy;
+    this.color = 0;//(Math.sin(Math.hypot(this.rx,this.ry)*5)*0.5+1.5)%1;
   }
   calcForce() {
     let B = SPH.RANGE;
 
-    if (this.x < B) this.vx += (B - this.x) * 0.125;
-    if (this.y < B) this.vy += (B - this.y) * 0.125;
-    if (this.x > w - B) this.vx += (w - B - this.x) * 0.125;
-    if (this.y > h - B) this.fy += (h - B - this.y) * 0.125;
+    if (this.x < B) this.fx += (B - this.x) * 0.125-this.vx*0.5;
+    if (this.y < B) this.fy += (B - this.y) * 0.125-this.vy*0.5;
+    if (this.x > w - B) this.fx += (w - B - this.x) * 0.125-this.vx*0.5;
+    if (this.y > h - B) this.fy += (h - B - this.y) * 0.125-this.vy*0.5;
   }
 }
 class Neighbor {
@@ -390,6 +417,12 @@ class Neighbor {
     p1.fy += rvy * viscosityWeight;
     p2.fx -= rvx * viscosityWeight;
     p2.fy -= rvy * viscosityWeight;
+    p1.min_d += this.distance;
+
+    p1.min_dc += 1;
+
+    p2.min_d += this.distance;
+    p2.min_dc += 1;
   }
 }
 class Grid {
