@@ -1,5 +1,5 @@
 {
-  "name": "sph-water",
+  "name": "@cm-tech/sph-water",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:CM-Tech/sph-water.git",
