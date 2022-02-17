@@ -40,7 +40,7 @@ class SPHConfig {
   PRESSURE: number;
   VISCOSITY: number;
   DARK: boolean;
-  ARC: boolean = true;
+  ARC: boolean = false;
   constructor() {
     this.GRAVITY_Y = 0.125;
     this.GRAVITY_X = 0;
