@@ -114,7 +114,7 @@ function draw() {
     chroma("#55EEEE"),
     BK,
     SPH.DARK ? "screen" : "multiply"
-  ); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
+  ).hex(); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
 
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
@@ -125,10 +125,11 @@ function draw() {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.rx, -p.ry));
-    let ry = Math.max(
-      SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2),
-      0
-    ); //Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let ry =
+      Math.max(
+        SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2),
+        0
+      ) / 2; //Math.min(p.density / DENSITY / 2, 1) * SPH.RANGE / 4;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     let rx = ry; //SPH.RANGE / 8; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
     if (SPH.ARC) {
@@ -165,7 +166,7 @@ function draw() {
     chroma("#55EEEE").brighten(SPH.DARK ? -1 : 1),
     BK,
     SPH.DARK ? "screen" : "multiply"
-  ); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
+  ).hex(); //chroma.hsl(hsl[0]+p.color*360,hsl[1],hsl[2]);
 
   for (var i = 0; i < numParticles; i++) {
     var p = particles[i];
@@ -173,10 +174,11 @@ function draw() {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(Math.atan2(p.rx, -p.ry));
-    let ry = Math.max(
-      0,
-      SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2)
-    ); //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
+    let ry =
+      Math.max(
+        0,
+        SPH.RANGE / 2 - (p.min_dc < 1 ? SPH.RANGE / 2 : p.min_d / p.min_dc / 2)
+      ) / 2; //Math.min(p.density / DENSITY / 8, 1) * SPH.RANGE / 2;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     let rx = ry; //Math.min(p.density/DENSITY/8,1)*SPH.RANGE;//(Math.hypot(p.rx, -p.ry)+0.0)*SPH.RANGE;
     //   ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI, false);
 
@@ -283,8 +285,8 @@ function updateGrids() {
     for (j = 0; j < NUM_GRIDSY; j++) grids[i][j].clear();
   for (i = 0; i < numParticles; i++) {
     var p = particles[i];
-    p.min_d = 0;
-    p.min_dc = 0;
+    p.min_d = SPH.RANGE;
+    p.min_dc = 1;
     p.fx = p.fy = p.density = 0;
     p.gx = Math.floor(p.x * INV_GRID_SIZEX);
     p.gy = Math.floor(p.y * INV_GRID_SIZEY);
@@ -449,12 +451,12 @@ class Neighbor {
     p1.fy += rvy * viscosityWeight;
     p2.fx -= rvx * viscosityWeight;
     p2.fy -= rvy * viscosityWeight;
-    p1.min_d += this.distance;
+    p1.min_d = Math.min(p1.min_d, this.distance);
 
-    p1.min_dc += 1;
+    p1.min_dc = 1;
 
-    p2.min_d += this.distance;
-    p2.min_dc += 1;
+    p2.min_d = Math.min(p2.min_d, this.distance);
+    p2.min_dc = 1;
   }
 }
 class Grid {
